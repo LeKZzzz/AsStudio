@@ -13,7 +13,6 @@ import configparser
 import asyncio
 import time
 
-
 # 配置文件读取
 config = configparser.RawConfigParser()
 bilicfgpath = utils.get_path('bili')
@@ -46,23 +45,27 @@ async def __update(num):
         print('{}直播中'.format(room))
 
 
-def __control():
+def __control(loop, lock):
     """
     控制查询间隔
     同时查询多个房间的时间间隔应设置在30s以上
     """
-    loop = asyncio.new_event_loop()
     while True:
+        lock.acquire()
+
         print('===============当前轮次开始===============')
         checkingrooms = [__update(num) for num in range(len(config.items('RoomsStatus')))]
         loop.run_until_complete(asyncio.wait(checkingrooms))
         print('===============当前轮次结束===============')
-        time.sleep(2)
+
+        lock.release()
+
+        time.sleep(30)
 
 
-def run():
+def run(loop, lock):
     print('状态更新模块启动')
-    __control()
+    __control(loop, lock)
 
 
 if __name__ == '__main__':
