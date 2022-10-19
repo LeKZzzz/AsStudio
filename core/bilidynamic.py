@@ -19,12 +19,13 @@ credential = Credential(sessdata=config['Cookie']['sessdata'],
 # 直播间上一次查询时的状态
 prestatus = [eval(status[1]) for status in config.items('RoomsStatus')]
 
+# 开播动态id
+dynamic_id = [-1 for _ in config.items('RoomsStatus')]
 
 async def __send_dynamic(num):
     """
     开播发送开播b站动态
     """
-    global dynamic_id  # 开播动态id
     room_id = config.items('RoomsStatus')[num][0]
     room_info = await utils.get_room_info(eval(room_id))
     nickname = room_info['nickname']  # 主播昵称
@@ -32,7 +33,7 @@ async def __send_dynamic(num):
     text = '哔哩哔哩开播小喇叭：主播[' + nickname + ']开播啦！今天的主题是：' + roomtitle \
            + '。直播间地址：http://live.bilibili.com/' + room_id  # 开播动态文本
     ret = await dynamic.send_dynamic(text=text, credential=credential)  # 获取开播动态id
-    dynamic_id = ret['dynamic_id']
+    dynamic_id[num] = ret['dynamic_id']
     print('主播{}开播b站动态已发送'.format(nickname))
 
 
@@ -40,16 +41,15 @@ async def __delete_dynamic(num):
     """
     下播删除开播b站动态
     """
-    global dynamic_id  # 开播动态id
     room_id = config.items('RoomsStatus')[num][0]
     room_info = await utils.get_room_info(eval(room_id))  # 获取直播间信息
     nickname = room_info['nickname']  # 主播昵称
-    try:  # 删除开播动态
-        dynamicctl = dynamic.Dynamic(dynamic_id, credential)
+    if dynamic_id[num] != -1:
+        dynamicctl = dynamic.Dynamic(dynamic_id[num], credential)
         await dynamicctl.delete()
         print('主播{}开播b站动态已删除'.format(nickname))
-    except:  # 开播时未发送开播动态因此无法删除
-        print('主播{}本次直播并未发送开播动态'.format(nickname))
+    else:  # 开播时未发送开播动态因此无法删除
+        print('主播{}本次直播并未发送开播动态或中途关闭了本程序'.format(nickname))
 
 
 def __live_status(num, loop):
