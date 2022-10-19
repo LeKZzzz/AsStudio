@@ -8,7 +8,7 @@ import threading
 import asyncio
 
 if __name__ == '__main__':
-    threads = []    # 子线程列表
+    threads = []  # 子线程列表
     lock = threading.Lock()  # 线程锁
     loop = asyncio.new_event_loop()  # 创建事件循环传入模块
     asyncio.set_event_loop(loop)

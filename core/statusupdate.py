@@ -3,7 +3,7 @@
 # Date：2022/10/14
 """
 
-更新受监控直播间的当前状态
+更新受监控直播间的直播状态
 
 """
 
@@ -26,23 +26,24 @@ async def __update(num):
     """
     获取当前直播状态并进行更新
     """
-    room = config.items('RoomsStatus')[num][0]
-    request = live.LiveRoom(eval(room))
-    result = await request.get_room_play_info()
+    offline = [0, 2]  # 下播的直播间状态
+    room_id = config.items('RoomsStatus')[num][0]
+    request = live.LiveRoom(eval(room_id))
+    result = await request.get_room_play_info()  # 查询直播间状态
     curstatus = result['live_status']
-    config.set('RoomsStatus', room, curstatus)
+    config.set('RoomsStatus', room_id, curstatus)  # 写入直播间状态
     config.write(open(bilicfgpath, 'w'))
 
-    if prestatus[num] == 0 and curstatus == 1:
-        print('{}已开播'.format(room))
-        prestatus[num] = 1
-    elif prestatus[num] == 1 and curstatus == 0:
-        print('{}已下播'.format(room))
-        prestatus[num] = 0
-    elif prestatus[num] == 0 and curstatus == 0:
-        print('{}未开播'.format(room))
+    if prestatus[num] in offline and curstatus == 1:  # 开播
+        print('{}已开播'.format(room_id))
+        prestatus[num] = curstatus
+    elif prestatus[num] == 1 and curstatus in offline:  # 下播
+        print('{}已下播'.format(room_id))
+        prestatus[num] = curstatus
+    elif prestatus[num] in offline and curstatus in offline:  # 未开播
+        print('{}未开播'.format(room_id))
     else:
-        print('{}直播中'.format(room))
+        print('{}直播中'.format(room_id))  # 直播中
 
 
 def __control(loop, lock):
@@ -51,22 +52,21 @@ def __control(loop, lock):
     同时查询多个房间的时间间隔应设置在30s以上
     """
     while True:
-        lock.acquire()
+        lock.acquire()  # 加锁
 
-        print('===============当前轮次开始===============')
         checkingrooms = [__update(num) for num in range(len(config.items('RoomsStatus')))]
         loop.run_until_complete(asyncio.wait(checkingrooms))
         print('===============当前轮次结束===============')
 
-        lock.release()
+        lock.release()  # 释放锁
 
-        time.sleep(30)
+        time.sleep(120)  # 控制时间间隔
 
 
 def run(loop, lock):
+    """
+    :param loop:事件循环
+    :param lock: 线程锁
+    """
     print('状态更新模块启动')
     __control(loop, lock)
-
-
-if __name__ == '__main__':
-    run()
