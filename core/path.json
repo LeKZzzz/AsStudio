@@ -1,0 +1,6 @@
+{
+  "bili": "conf\\biliconfig.ini",
+  "dynamic": "log\\Runtime\\bilidynamic\\",
+  "status":"log\\Runtime\\statusupdate\\",
+  "danmaku": "log\\Danmaku"
+}
