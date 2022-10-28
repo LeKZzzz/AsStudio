@@ -22,6 +22,9 @@ prestatus = [eval(status[1]) for status in config.items('RoomsStatus')]
 # 开播动态id
 dynamic_id = [-1 for _ in config.items('RoomsStatus')]
 
+# 日志对象
+logger = utils.Log("dynamic")
+
 async def __send_dynamic(num):
     """
     开播发送开播b站动态
@@ -34,6 +37,7 @@ async def __send_dynamic(num):
            + '。直播间地址：http://live.bilibili.com/' + room_id  # 开播动态文本
     ret = await dynamic.send_dynamic(text=text, credential=credential)  # 获取开播动态id
     dynamic_id[num] = ret['dynamic_id']
+    logger.info('主播{}开播b站动态已发送'.format(nickname))
     print('主播{}开播b站动态已发送'.format(nickname))
 
 
@@ -47,8 +51,10 @@ async def __delete_dynamic(num):
     if dynamic_id[num] != -1:
         dynamicctl = dynamic.Dynamic(dynamic_id[num], credential)
         await dynamicctl.delete()
+        logger.info('主播{}开播b站动态已删除'.format(nickname))
         print('主播{}开播b站动态已删除'.format(nickname))
     else:  # 开播时未发送开播动态因此无法删除
+        logger.info('主播{}本次直播并未发送开播动态或中途关闭了本程序'.format(nickname))
         print('主播{}本次直播并未发送开播动态或中途关闭了本程序'.format(nickname))
 
 
@@ -89,5 +95,6 @@ def run(loop, lock):
     :param loop:事件循环
     :param lock: 线程锁
     """
+    logger.info('b站动态模块启动')
     print('b站动态模块启动')
     __control(loop, lock)

@@ -61,7 +61,7 @@ class Log:
         self.filename = self.prepath + str(self.curtime[0]) + '-' + str(self.curtime[1]) + '-' + str(
             self.curtime[2]) + '.txt'  # 日志文件的绝对路径
         # 初始化Logger对象
-        self.logger = logging.getLogger(name='module')
+        self.logger = logging.Logger(name='module')
         self.logger.setLevel(logging.DEBUG)
         if not os.path.exists(self.filename):  # 检查日志文件
             self.file = open(self.filename, 'w')
