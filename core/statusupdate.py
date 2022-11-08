@@ -53,30 +53,30 @@ async def __update(num):
         print('{}直播中'.format(room_id))  # 直播中
 
 
-def __control(loop, lock):
+def __control(loop):
     """
     控制查询间隔
     同时查询多个房间的时间间隔应设置在30s以上
     """
-    while True:
-        lock.acquire()  # 加锁
+    # while True:
+    # lock.acquire()  # 加锁
 
-        checkingrooms = [__update(num) for num in range(len(config.items('RoomsStatus')))]
-        loop.run_until_complete(asyncio.wait(checkingrooms))
-        logger.info('===============当前轮次结束===============')
-        print('===============当前轮次结束===============')
-        lock.release()  # 释放锁
+    checkingrooms = [__update(num) for num in range(len(config.items('RoomsStatus')))]
+    loop.create_task(asyncio.wait(checkingrooms))
+    # lock.release()  # 释放锁
 
-        time.sleep(120)  # 控制时间间隔
+    # time.sleep(60)  # 控制时间间隔
 
 
-def run(loop, lock):
+def run(loop):
     """
     :param loop:事件循环
     :param lock: 线程锁
     """
+    print('========================================')
+    logger.info('========================================')
     logger.info('状态更新模块启动')
     logger.info('========================================')
     print('状态更新模块启动')
     print('========================================')
-    __control(loop, lock)
+    __control(loop)

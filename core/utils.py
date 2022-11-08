@@ -77,14 +77,14 @@ class Log:
         生成正常运行日志
         :param info:日志信息
         """
-        Log.filecheck(self)
+        self.filecheck()
         self.logger.info(info)
 
     def exception(self):
         """
         生成错误运行日志
         """
-        Log.filecheck(self)
+        self.filecheck()
         self.logger.exception('Exception occurred')
 
     def filecheck(self):
@@ -95,7 +95,7 @@ class Log:
         if self.curtime[2] > self.pretime[2]:
             self.filename = self.prepath + str(self.curtime[0]) + '-' + str(self.curtime[1]) + '-' + str(
                 self.curtime[2]) + '.txt'
-            Log.sethandler(self)
+            self.sethandler()
             self.pretime = self.curtime
 
     def sethandler(self):

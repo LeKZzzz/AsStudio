@@ -4,6 +4,7 @@
 
 
 from bilibili_api import dynamic, Credential
+from core import statusupdate
 import configparser
 import time
 import utils
@@ -24,6 +25,7 @@ dynamic_id = [-1 for _ in config.items('RoomsStatus')]
 
 # 日志对象
 logger = utils.Log("dynamic")
+
 
 async def __send_dynamic(num):
     """
@@ -68,33 +70,35 @@ def __live_status(num, loop):
 
     if prestatus[num] in offline and curstatus == 1:  # 开播
         prestatus[num] = curstatus
-        loop.run_until_complete(__send_dynamic(num))
+        loop.create_task(__send_dynamic(num))
     elif prestatus[num] == 1 and curstatus in offline:  # 下播
         prestatus[num] = curstatus
-        loop.run_until_complete(__delete_dynamic(num))
+        loop.create_task(__delete_dynamic(num))
 
 
-def __control(loop, lock):
+def __control(loop):
     """
     控制查询间隔
     同时查询多个房间的时间间隔应设置在30s以上
     """
     while True:
-        lock.acquire()  # 加锁
+        # lock.acquire()  # 加锁
+
+        statusupdate.run(loop)
 
         for num in range(len(config.items('RoomsStatus'))):
             __live_status(num, loop)
 
-        lock.release()  # 释放锁
+        # lock.release()  # 释放锁
 
-        time.sleep(120)  # 控制时间间隔
+        time.sleep(60)  # 控制时间间隔
 
 
-def run(loop, lock):
+def run(loop):
     """
-    :param loop:事件循环
+    :param loop: 事件循环
     :param lock: 线程锁
     """
     logger.info('b站动态模块启动')
     print('b站动态模块启动')
-    __control(loop, lock)
+    __control(loop)
