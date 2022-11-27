@@ -84,10 +84,12 @@ def __control(loop):
     while True:
         # lock.acquire()  # 加锁
 
-        statusupdate.run(loop)
-
-        for num in range(len(config.items('RoomsStatus'))):
-            __live_status(num, loop)
+        if utils.read_json(utils.get_path("function"))['dynamic']:
+            statusupdate.run(loop)
+            for num in range(len(config.items('RoomsStatus'))):
+                __live_status(num, loop)
+        else:
+            logger.info('b站动态模块未开启')
 
         # lock.release()  # 释放锁
 

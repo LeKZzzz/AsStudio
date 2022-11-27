@@ -8,3 +8,6 @@ test.py
 /log/Danmaku/welcome/*.txt
 /log/Runtime/bilidynamic/*.txt
 /log/Runtime/statusupdate/*.txt
+/core/modules/puzzle/puzzle/data/scores/scores.db
+/main.spec
+/output/

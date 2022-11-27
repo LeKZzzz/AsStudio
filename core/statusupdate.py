@@ -11,7 +11,6 @@ from bilibili_api import live
 import utils
 import configparser
 import asyncio
-import time
 
 # 配置文件读取
 config = configparser.RawConfigParser()

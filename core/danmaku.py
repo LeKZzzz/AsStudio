@@ -39,6 +39,10 @@ answer_pattern = '^#\u8c1c\u5e95(\uff1a|:)[\u4e00-\u9fa5]+$'  # 谜底
 score_pattern = '^#\u5206\u6570$'  # 分数
 change_pattern = '^#\u6362\u9898$'  # 换题
 
+# Signal
+danmaku_signal = None
+gift_signal = None
+
 
 # 协程被LiveDanmaku()的父类注册入了事件监听器中，收到事件名的callback之后会执行该事件对应的所有协程，协程参数event为callback_info
 
@@ -49,24 +53,30 @@ async def danmaku(event):
     直播间弹幕数据
     :param event: 弹幕数据
     """
-    uid = event['data']['info'][2][0]
-    username = event['data']['info'][2][1]
-    msg = event['data']['info'][1]
-    identity = event['data']['info'][-1]
-    print(username + ':', end=' ')
-    print(msg)
-    str = '[UID:{}] {}: {}'.format(uid, username, msg)
-    danmaku_logger.info(str)
+    global danmaku_signal
+    global live_room
+    live_room.room_display_id = eval(config.items('RoomsStatus')[0][0])
+    if utils.read_json(utils.get_path("function"))['connect']:
+        uid = event['data']['info'][2][0]
+        username = event['data']['info'][2][1]
+        msg = event['data']['info'][1]
+        identity = event['data']['info'][-1]
+        print(username + ':', end=' ')
+        print(msg)
+        str = '[UID:{}] {}: {}'.format(uid, username, msg)
+        danmaku_logger.info(str)
+        danmaku_str = '{}: {}'.format(username, msg)
+        danmaku_signal.textbroswer_print.emit(danmaku_str)
 
-    # 模块功能
-    function = json.loads(open(utils.get_path("function"), encoding="utf8").read())
-    match = re.match(key_pattern, msg)
-    if match:
-        if function['getweather'] == True:  # 天气获取
-            await get_weather(msg)
+        # 模块功能
+        function = json.loads(open(utils.get_path("function"), encoding="utf8").read())
+        match = re.match(key_pattern, msg)
+        if match:
+            if function['getweather'] == True:  # 天气获取
+                await get_weather(msg)
 
-        if function['puzzle'] == True:  # 谜语游戏
-            await puzzle_control(uid, username, msg, identity)
+            if function['puzzle'] == True:  # 谜语游戏
+                await puzzle_control(uid, username, msg, identity)
 
 
 @live_danmaku.on('GUARD_BUY')  # 大航海续费
@@ -76,14 +86,19 @@ async def gift(event):
     直播间礼物数据
     :param event: 弹幕数据
     """
-    uid = event['data']['data']['uid']
-    username = event['data']['data']['uname']
-    giftname = event['data']['data']['giftName']
-    number = event['data']['data']['num']
-    str = '[UID:{}] {} 送出了"{}" x{}'.format(uid, username, giftname, number)
-    gift_logger.info(str)
-    thx_danmaku = Danmaku(text='感谢{}送的{}，老板糊涂！'.format(username, giftname))
-    await live_room.send_danmaku(thx_danmaku)  # 发送感谢弹幕
+    global gift_signal
+    global live_room
+    live_room.room_display_id = eval(config.items('RoomsStatus')[0][0])
+    if utils.read_json(utils.get_path("function"))['connect']:
+        uid = event['data']['data']['uid']
+        username = event['data']['data']['uname']
+        giftname = event['data']['data']['giftName']
+        number = event['data']['data']['num']
+        str = '[UID:{}] {} 送出了"{}" x{}'.format(uid, username, giftname, number)
+        gift_logger.info(str)
+        gift_signal.textbroswer_print.emit(str)
+        thx_danmaku = Danmaku(text='感谢{}送的{}，老板糊涂！'.format(username, giftname)[0:20])
+        await live_room.send_danmaku(thx_danmaku)  # 发送感谢弹幕
 
 
 @live_danmaku.on("WELCOME")  # 老爷进入房间
@@ -94,10 +109,16 @@ async def welcome(event):
     直播间入场数据
     :param event:弹幕数据
     """
-    uid = event['data']['data']['uid']
-    username = event['data']['data']['uname']
-    str = '[UID:{}] {} 进入直播间'.format(uid, username)
-    welcome_logger.info(str)
+    global danmaku_signal
+    global live_room
+    live_room.room_display_id = eval(config.items('RoomsStatus')[0][0])
+    if utils.read_json(utils.get_path("function"))['connect']:
+        uid = event['data']['data']['uid']
+        username = event['data']['data']['uname']
+        str = '[UID:{}] {} 进入直播间'.format(uid, username)
+        welcome_logger.info(str)
+        welcome_str = '{} 进入直播间'.format(username)
+        danmaku_signal.textbroswer_print.emit(welcome_str)
 
 
 # 功能模块
@@ -206,10 +227,13 @@ async def update_danmaku():
     time.sleep(2)
 
 
-def run(loop):
+def run(loop, danmaku_Signal, gift_Signal):
     """
     运行danmaku模块
     :param loop: 事件循环
     :return: None
     """
+    global danmaku_signal, gift_signal
+    danmaku_signal = danmaku_Signal
+    gift_signal = gift_Signal
     loop.run_until_complete(live_danmaku.connect())

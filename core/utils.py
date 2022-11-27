@@ -14,6 +14,7 @@ import time
 import logging
 
 
+
 def get_path(field: str):
     """
     获取配置文件路径
@@ -110,3 +111,14 @@ class Log:
         self.formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
         self.handler.setFormatter(self.formatter)
         self.logger.addHandler(self.handler)
+
+
+def read_json(filepath):  # 读取json数据
+    with open(filepath, 'r', encoding='utf8') as fp:
+        data = json.load(fp)
+        return data
+
+
+def write_json(data, filepath): # 写入json数据
+    with open(filepath, 'w', encoding='utf8') as fp:
+        json.dump(data, fp, ensure_ascii=False, indent=4)
