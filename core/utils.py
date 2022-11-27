@@ -14,6 +14,7 @@ import time
 import logging
 
 
+
 def get_path(field: str):
     """
     获取配置文件路径
@@ -77,14 +78,14 @@ class Log:
         生成正常运行日志
         :param info:日志信息
         """
-        Log.filecheck(self)
+        self.filecheck()
         self.logger.info(info)
 
     def exception(self):
         """
         生成错误运行日志
         """
-        Log.filecheck(self)
+        self.filecheck()
         self.logger.exception('Exception occurred')
 
     def filecheck(self):
@@ -95,7 +96,7 @@ class Log:
         if self.curtime[2] > self.pretime[2]:
             self.filename = self.prepath + str(self.curtime[0]) + '-' + str(self.curtime[1]) + '-' + str(
                 self.curtime[2]) + '.txt'
-            Log.sethandler(self)
+            self.sethandler()
             self.pretime = self.curtime
 
     def sethandler(self):
@@ -110,3 +111,14 @@ class Log:
         self.formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
         self.handler.setFormatter(self.formatter)
         self.logger.addHandler(self.handler)
+
+
+def read_json(filepath):  # 读取json数据
+    with open(filepath, 'r', encoding='utf8') as fp:
+        data = json.load(fp)
+        return data
+
+
+def write_json(data, filepath): # 写入json数据
+    with open(filepath, 'w', encoding='utf8') as fp:
+        json.dump(data, fp, ensure_ascii=False, indent=4)

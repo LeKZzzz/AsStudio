@@ -1,6 +1,9 @@
 {
   "bili": "conf\\biliconfig.ini",
+  "function": "conf\\function.json",
   "dynamic": "log\\Runtime\\bilidynamic\\",
   "status":"log\\Runtime\\statusupdate\\",
-  "danmaku": "log\\Danmaku"
+  "danmaku": "log\\Danmaku\\danmaku\\",
+  "gifts": "log\\Danmaku\\gifts\\",
+  "welcome": "log\\Danmaku\\welcome\\"
 }

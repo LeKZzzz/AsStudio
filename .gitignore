@@ -3,3 +3,11 @@ test.py
 /conf/
 /.idea/
 /mcl/
+/log/Danmaku/danmaku/*.txt
+/log/Danmaku/gifts/*.txt
+/log/Danmaku/welcome/*.txt
+/log/Runtime/bilidynamic/*.txt
+/log/Runtime/statusupdate/*.txt
+/core/modules/puzzle/puzzle/data/scores/scores.db
+/main.spec
+/output/
